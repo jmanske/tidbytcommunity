@@ -8,6 +8,7 @@ Author: dinosaursrarr
 load("random.star", "random")
 load("render.star", "render")
 load("schema.star", "schema")
+load("time.star", "time")
 
 # Tidbyt size is fixed
 WIDTH_CELLS = 32
@@ -375,7 +376,7 @@ def bisect(sequence, width_start, width_end, height_start, height_end):
     if should_bisect_horizontally(width, height):
         bisect_height = int(random.number(height_start, height_end))
         gap = int(random.number(width_start, width_end))
-        for x in range(width_start, width_end):
+        for x in range(width_start + 1, width_end):
             if x == gap:
                 continue
             carved = ((x, bisect_height), (x - 1, bisect_height))
@@ -385,7 +386,7 @@ def bisect(sequence, width_start, width_end, height_start, height_end):
     else:
         bisect_width = int(random.number(width_start, width_end))
         gap = int(random.number(height_start, height_end))
-        for y in range(height_start, height_end):
+        for y in range(height_start + 1, height_end):
             if y == gap:
                 continue
             carved = ((bisect_width, y), (bisect_width, y - 1))
@@ -498,6 +499,9 @@ def main(config):
     background = render.Box(
         color = background_colour,
     )
+
+    # seed the RNG with a new value every 15 seconds
+    random.seed(time.now().unix // 15)
 
     return draw_animation(algorithm, wall_cell, background)
 

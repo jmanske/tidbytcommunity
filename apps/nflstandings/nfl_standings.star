@@ -32,6 +32,7 @@ ALT_COLOR = """
 {
     "LAC": "#1281c4",
     "LAR": "#003594",
+    "MIA": "#008E97",
     "NO": "#000000",
     "SEA": "#002244",
     "TB": "#34302B",
@@ -78,8 +79,16 @@ def main(config):
             if entries:
                 entriesToDisplay = teamsToShow
                 divisionName = s["name"]
+                sortOrder = {}
 
-                entries = sorted(entries, key = lambda e: e["stats"][4]["value"])
+                for j, k in enumerate(entries):
+                    stats = entries[j]["stats"]
+                    for l, m in enumerate(stats):
+                        if m["name"] == "gamesBehind":
+                            sortOrder[entries[j]["team"]["id"]] = stats[l]["value"]
+                sortOrder = {k: v for k, v in sorted(sortOrder.items(), key = lambda item: item[1])}
+                keysList = list(sortOrder.keys())
+                entries = sorted(entries, key = lambda e: keysList.index(e["team"]["id"]))
 
                 for x in range(0, len(entries), entriesToDisplay):
                     cycleCount = cycleCount + 1
@@ -310,13 +319,20 @@ def get_team(x, s, entriesToDisplay, colHeight, now, timeColor, divisionName, sh
             teamName = s[i + x]["team"]["abbreviation"]
             teamColor = get_team_color(teamID)
             teamLogo = get_logoType(teamName, s[i + x]["team"]["logos"][1]["href"])
-            teamWins = s[i + x]["stats"][1]["displayValue"]
-            teamLosses = s[i + x]["stats"][2]["displayValue"]
-            teamTies = s[i + x]["stats"][5]["displayValue"]
-            teamRecord = teamWins + "-" + teamLosses
+            stats = s[i + x]["stats"]
+            for j, k in enumerate(stats):
+                if k["name"] == "wins":
+                    teamWins = k["displayValue"]
+                if k["name"] == "losses":
+                    teamLosses = k["displayValue"]
+                if k["name"] == "ties":
+                    teamTies = k["displayValue"]
+                if k["name"] == "gamesBehind":
+                    teamGB = k["displayValue"]
             if int(teamTies) > 0:
-                teamRecord = teamRecord + "-" + teamTies
-            teamGB = s[i + x]["stats"][4]["displayValue"]
+                teamRecord = teamWins + "-" + teamLosses + "-" + teamTies
+            else:
+                teamRecord = teamWins + "-" + teamLosses
 
             team = render.Column(
                 children = [
