@@ -1,0 +1,8 @@
+---
+id: mlb-total-wins
+name: MLB Total Wins
+summary: Show cumulative wins
+desc: Shows the graph of cumulative wins for the given MLB team.
+author: Jake Manske
+fileName: mlb_total_wins.star
+packageName: mlbtotalwins
