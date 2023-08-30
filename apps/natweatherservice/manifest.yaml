@@ -1,0 +1,8 @@
+---
+id: natweatherservice
+name: NatWeatherService
+summary: Weather.gov API forecasts
+desc: Displays forecast information using the national weather service API.
+author: Jake Manske
+fileName: natweatherservice.star
+packageName: natweatherservice
