@@ -15,46 +15,37 @@ load("animation.star", "animation")
 DEFAULT_WHO = "world"
 STATION_CACHE_SECONDS = 86400
 GRID_FORECAST_URL = "https://api.weather.gov/points/{},{}"
-MY_LOC = {
+MY_LOC = """{
     "lat": "43.044170",
     "lng": "-89.549410",
     "description": "Verona, WI, USA",
 	"locality": "Verona",
 	"place_id": "ChIJCSF8lBZEwokRhngABHRcdoI",
 	"timezone": "America/Chicago"
-}
+}"""
 TEMP_FONT = "10x20"
 DESC_COLOR = "#949494"
+DESC_FONT = "CG-pixel-4x5-mono"
 
 OPTIONS = [ "Overnight", "Today", "Tonight", "This Afternoon" ]
 
 def main(config):
-    loc = config.str("location")
-    if loc == None:
-        loc = MY_LOC
-    else:
-        loc = json.decode(loc)
+    loc = json.decode(config.str("location") or MY_LOC)
+
     info = get_today_forecast(loc)
 
-    query_params = {
-        "size": "large"
-    }
     return render.Root(
         child = render.Row(
+            main_align = "space_between",
             cross_align = "end",
+            expanded = True,
             children = [
-                render.Image(
-                    src = http.get(info.Icon, params = query_params).body(),
-                    width = 32
-                ),
-                render.Box(
-                    width = 32,
-                    height = 32,
-                    child = render.Column(
+                render_icon(info.Icon),
+                render.Column(
                     cross_align = "end",
                     children = [
                         render.Padding(
-                            pad = (0,-2,0,0),
+                            pad = (0,-3,0,0),
                             child = render.Text(
                                 content = info.BigTemp.Value,
                                 font = TEMP_FONT,
@@ -67,14 +58,22 @@ def main(config):
                         ),
                         render.Text(
                             content = info.Description,
-                            font = "CG-pixel-4x5-mono",
+                            font = DESC_FONT,
                             color = DESC_COLOR
                         )
                     ]
                 )
-                )
             ]
         )
+    )
+
+def render_icon(icon):
+    icon_query_params = {
+        "size": "small"
+    }
+    return render.Image(
+        src = http.get(icon, params = icon_query_params, ttl_seconds = STATION_CACHE_SECONDS).body(),
+        width = 32
     )
 
 def http_get_urls(loc):
@@ -87,9 +86,10 @@ def http_get_urls(loc):
 def http_get_forecast(properties):
     url = properties.get("forecast")
     headers = {
-        "feature-flags": "forecast_temperature_qv"
+        "feature-flags": "forecast_temperature_qv",
     }
     response = http.get(url, headers = headers, ttl_seconds = 30)
+    print(response)
 
     return response.json()
 
@@ -105,8 +105,13 @@ def get_today_forecast(loc):
     short_forecast = ""
     for period in info.get("properties").get("periods"):
         # increase the counter
-        number +=1
+        number += 1
         name = period.get("name")
+        start_time = time.parse_time(period.get("startTime"))
+        end_time = time.parse_time(period.get("endTime"))
+        print(start_time)
+        print(end_time)
+        print(name)
         # if the first entry in the array is already "overnight" or "tonight"
         # it means we should render the "night-style" weather
         if number == 1 and (name == "Overnight" or name == "Tonight"):
@@ -114,30 +119,22 @@ def get_today_forecast(loc):
             overnight = True
             high = get_temp(period)
             short_forecast = period.get("shortForecast")
-            break
+            continue
 
         # otherwise get today and tonight
         # today will have the high
-        # tomorrow will have the low
-        start_time = time.parse_time(period.get("startTime"))
-        end_time = time.parse_time(period.get("endTime"))
-        now = time.now()
-
+        # tonight will have the low
         if name == "Today" or name == "This Afternoon":
             high = get_temp(period)
-            print(high)
             icon = get_icon(period)
-            print(icon)
             continue
         if name == "Tonight":
             low = get_temp(period)
-            print(low)
             if icon == None:
                 icon = get_icon(period)
         if high != None and low != None:
             break        
     return struct(BigTemp = high, LittleTemp = low, Icon = icon, IsOvernight = overnight, Description = short_forecast)
-
 
 def get_icon(period):
     return period.get("icon").split("?")[0].split(",")[0]
