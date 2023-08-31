@@ -78,7 +78,7 @@ def render_icon(icon):
 
 def http_get_urls(loc):
     url = GRID_FORECAST_URL.format(loc.get("lat"), loc.get("lng"))
-    print(url)
+
     response = http.get(url, ttl_seconds = STATION_CACHE_SECONDS)
 
     return response.json().get("properties")
@@ -89,7 +89,6 @@ def http_get_forecast(properties):
         "feature-flags": "forecast_temperature_qv",
     }
     response = http.get(url, headers = headers, ttl_seconds = 30)
-    print(response)
 
     return response.json()
 
@@ -107,14 +106,13 @@ def get_today_forecast(loc):
         # increase the counter
         number += 1
         name = period.get("name")
-        start_time = time.parse_time(period.get("startTime"))
         end_time = time.parse_time(period.get("endTime"))
-        print(start_time)
-        print(end_time)
-        print(name)
-        # if the first entry in the array is already "overnight" or "tonight"
-        # it means we should render the "night-style" weather
-        if number == 1 and (name == "Overnight" or name == "Tonight"):
+
+        # the entries in the array are 12-hour chunks that go from 6AM to 6PM
+        # if the first entry in the array has an end time of "6"
+        # it means that the first entry is a "tonight" or "overnight" entry
+        if number == 1 and end_time.hour == 6:
+            continue
             icon = get_icon(period)
             overnight = True
             high = get_temp(period)
@@ -124,11 +122,12 @@ def get_today_forecast(loc):
         # otherwise get today and tonight
         # today will have the high
         # tonight will have the low
-        if name == "Today" or name == "This Afternoon":
+        if end_time.hour == 18:
             high = get_temp(period)
             icon = get_icon(period)
+            short_forecast = period.get("shortForecast")
             continue
-        if name == "Tonight":
+        else:
             low = get_temp(period)
             if icon == None:
                 icon = get_icon(period)
@@ -146,7 +145,7 @@ def get_temp(period):
     color = "#000000"
     if value < 10:
         color = "#4B0082"
-    elif value < 50:
+    elif value < 55:
         color = "#0000FF"
     elif value < 80:
         color = "#FF7F00"
