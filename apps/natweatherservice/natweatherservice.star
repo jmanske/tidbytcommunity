@@ -33,7 +33,7 @@ def main(config):
     loc = json.decode(config.str("location") or MY_LOC)
 
     info = get_today_forecast(loc)
-
+    print(info.Icon)
     return render.Root(
         child = render.Row(
             main_align = "space_between",
