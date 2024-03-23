@@ -1,0 +1,8 @@
+---
+id: mars-rover-photos
+name: Mars Rover Photos
+summary: Show images from Mars rover
+desc: Displays an image from the Mars rover.
+author: Jake Manske
+fileName: mars_rover_photos.star
+packageName: marsroverphotos
