@@ -1,0 +1,8 @@
+---
+id: mlb-stats-leaders
+name: MLB Stats Leaders
+summary: Show leaders for MLB stats
+desc: Displays a leaderboard for a given stat for the current season. Can filter to your favorite team or see leaders league-wide!
+author: Jake Manske
+fileName: mlb_stats_leaders.star
+packageName: mlbstatsleaders
