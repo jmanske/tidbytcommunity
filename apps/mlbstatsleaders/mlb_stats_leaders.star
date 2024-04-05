@@ -10,7 +10,7 @@ load("schema.star", "schema")
 load("http.star", "http")
 
 DEFAULT_WHO = "world"
-MLB_HEADSHOT_URL = "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_150/v1/people/{0}/headshot/67/current"
+MLB_HEADSHOT_URL = "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_150/v1/people/{0}/headshot/67/current"
 MLB_LEADERS_URL = "https://statsapi.mlb.com/api/v1/stats/leaders"
 
 def main(config):
