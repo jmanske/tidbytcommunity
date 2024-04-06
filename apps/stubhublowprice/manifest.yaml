@@ -1,0 +1,8 @@
+---
+id: stubhub-low-price
+name: StubHub Low Price
+summary: Show lowest price
+desc: Show the lowest price.
+author: Jake Manske
+fileName: stubhub_low_price.star
+packageName: stubhublowprice
