@@ -546,7 +546,7 @@ def get_sched(team, timezone):
         "sportId": "1",
         "startDate": get_date(yesterday),
         "endDate": get_date(future),
-        "hydrate": "statusFlags,linescore,person,probablePitcher",  # hydrate stuff so we don't have to hit API again
+        "hydrate": "statusFlags,linescore,person,probablePitcher,decisions",  # hydrate stuff so we don't have to hit API again
         "fields": ",".join(SCHED_FIELDS),
     }
     url = MLB_BASE_URL.format(MLB_SCHED_ENDPOINT)
@@ -588,6 +588,10 @@ SCHED_FIELDS = (
     "isTopInning",
     "currentInning",
     "outs",
+    "decisions",
+    "winner",
+    "loser",
+    "save"
 )
 
 def get_yesterday_date(timezone):
