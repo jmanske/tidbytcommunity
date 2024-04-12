@@ -32,6 +32,7 @@ def main(config):
     team = config.str("team", DEFAULT_TEAM)
     hour_to_switch = int(config.str("hour", DEFAULT_HOUR_TO_SWITCH))
     relative_or_absolute = config.str("game_time", DEFAULT_RELATIVE)
+    show_final_details = config.bool("final_details")
 
     # get schedule
     response = get_sched(team, timezone)
@@ -655,6 +656,13 @@ def get_schema():
                 options = game_time_options,
                 default = DEFAULT_RELATIVE,
             ),
+            schema.Toggle(
+                id = "final_details",
+                name = "Show final details",
+                desc = "A toggle to show final details, like score and winning/losing pitcher.",
+                icon = "circle-info",
+                default = False,
+            )
         ],
     )
 
