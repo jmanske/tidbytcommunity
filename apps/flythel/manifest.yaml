@@ -2,7 +2,7 @@
 id: flythel
 name: FlyTheL
 summary: Show MLB Win/Loss Status
-desc: Displays whether your chosen MLB team has recently won or lost, previews the upcoming game, and provides live in-game updates.
+desc: Displays whether your chosen MLB team has recently won or lost, previews the upcoming game, and provides live in-game updates. Customize your app experience by choosing your favorite team, what hour of the day you want the app to switch from yesterday's result to an upcoming game, whether you want to display game time in relative or absolute terms, and whether you want the app to show you game final details.
 author: Jake Manske
 fileName: flythel.star
 packageName: flythel
