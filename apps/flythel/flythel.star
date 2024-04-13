@@ -27,15 +27,21 @@ INNING_COLOR = "#ffd500"
 MLB_SCHED_ENDPOINT = "/api/v1/schedule/games/"
 MLB_BASE_URL = "https://statsapi.mlb.com{0}"
 
+def get_config(config):
+    return struct(
+        Timezone = config.get("$tz", DEFAULT_TIMEZONE),
+        Team = config.str("team", DEFAULT_TEAM),
+        SwitchHour = int(config.str("hour", DEFAULT_HOUR_TO_SWITCH)),
+        GameTime = config.str("game_time", DEFAULT_RELATIVE),
+        ShowDetails = config.bool("final_details")
+    )
+
 def main(config):
-    timezone = config.get("$tz", DEFAULT_TIMEZONE)
-    team = config.str("team", DEFAULT_TEAM)
-    hour_to_switch = int(config.str("hour", DEFAULT_HOUR_TO_SWITCH))
-    relative_or_absolute = config.str("game_time", DEFAULT_RELATIVE)
-    show_final_details = config.bool("final_details")
+    # store config in a struct
+    cfg = get_config(config)
 
     # get schedule
-    response = get_sched(team, timezone)
+    response = get_sched(cfg.Team, cfg.Timezone)
 
     # if API call is not successful render generic error screen
     if response.status_code != HTTP_OK:
@@ -47,11 +53,11 @@ def main(config):
     sched = response.json()
 
     # figure out what to display
-    current_hour = get_now(timezone).hour
-    yesterday = get_yesterday_date(timezone)
+    current_hour = get_now(cfg.Timezone).hour
+    yesterday = get_yesterday_date(cfg.Timezone)
 
     game = None
-    if current_hour < hour_to_switch:
+    if current_hour < cfg.SwitchHour:
         # want to do yesterday's game, if it exists (will be 0-index if it is there)
         event = sched.get("dates")[0]
         if event.get("date") == yesterday:
@@ -70,9 +76,9 @@ def main(config):
     # if we still have no game, it means no games are scheduled for the next week
     # display zero state image
     if not game:
-        widget = render_no_games(team)
+        widget = render_no_games(cfg.Team)
     else:
-        widget = render_game(game, team, timezone, relative_or_absolute)
+        widget = render_game(game, cfg)
 
     return render.Root(
         child = widget,
@@ -146,17 +152,17 @@ def render_http_error(response):
         ],
     )
 
-def render_game(game, team, timezone, relative_or_absolute):
+def render_game(game, cfg):
     # get the game state
     status = game.get("statusFlags")
 
     # if game is cancelled/postponed/delayed or in pre-game, show that
     if should_render_preview(status):
-        return render_preview(game, timezone, status, relative_or_absolute)
+        return render_preview(game, cfg.Timezone, status, cfg.GameTime)
 
     # game is finished, render final
     if status.get("isFinal"):
-        return render_final(game, team)
+        return render_final(game, cfg)
 
     # otherwise the game must be in progress, so render that
     return render_in_progress(game)
@@ -164,7 +170,8 @@ def render_game(game, team, timezone, relative_or_absolute):
 def should_render_preview(status):
     return status.get("isCancelled") or status.get("isSuspended") or status.get("isPostponed") or status.get("isDelayed") or status.get("isPreGameDelay") or status.get("isInGameDelay") or status.get("isPreview") or status.get("isWarmup")
 
-def render_final(game, team):
+def render_final(game, cfg):
+    team = cfg.Team
     away = game.get("teams").get("away")
     winner = False
     if str(int(away.get("team").get("id"))) == team:
