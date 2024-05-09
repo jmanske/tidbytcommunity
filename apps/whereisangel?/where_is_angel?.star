@@ -130,46 +130,48 @@ def main(config):
                 ]
             )
         )
+    for _ in range(2):
+        frames.append(
+            render.Row(
+                children = [get_space(15),
+                    render.Image(
+                        src = GLOBE
+                    )
+                ]
+            )
+        )
+    for _ in range(2):
+        frames.append(         
+            render.Row(
+                children = [get_space(15),
+                    render.Image(
+                        src = BASEBALL
+                    )
+                ]
+            )   
+        )
+    if away_team_id != None:
         for _ in range(2):
             frames.append(
                 render.Row(
-                    children = [get_space(15),
+                    children = [
                         render.Image(
-                            src = GLOBE
-                        )
+                            src = TEAM_INFO[away_team_id].Logo,
+                            width = 32,
+                        ),
+                        render.Image(
+                            src = TEAM_INFO[home_team_id].Logo,
+                            width = 32,
+                        ),
                     ]
                 )
             )
         for _ in range(2):
-            frames.append(         
-                render.Row(
-                    children = [get_space(15),
-                        render.Image(
-                            src = BASEBALL
-                        )
-                    ]
-                )   
+            frames.append(
+                render.Text(
+                    content = ump_location
+                )
             )
-        if away_team_id != None:
-            for _ in range(2):
-                frames.append(
-                    render.Row(
-                        children = [
-                            render.Image(
-                                src = TEAM_INFO[away_team_id].Logo
-                            ),
-                            render.Image(
-                                src = TEAM_INFO[home_team_id].Logo
-                            ),
-                        ]
-                    )
-                )
-            for _ in range(2):
-                frames.append(
-                    render.Text(
-                        content = ump_location
-                    )
-                )
     return render.Root(
         delay = 600,
         show_full_animation = True,
