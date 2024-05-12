@@ -1,0 +1,8 @@
+---
+id: kwik-trip-gas
+name: Kwik Trip Gas
+summary: Show Kwik Trip Gas Prices
+desc: Dispays Kwik Trip gas prices in your area.
+author: Jake Manske
+fileName: kwik_trip_gas.star
+packageName: kwiktripgas
