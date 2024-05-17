@@ -11,10 +11,12 @@ load("http.star", "http")
 load("encoding/json.star", "json")
 load("encoding/base64.star", "base64")
 
+REGULAR_TYPE = "UNLEADED 87 (10% ETH)"
+PREMIUM_TYPE = "UNLEADED PREMIUM"
 DEFAULT_WHO = "world"
 DEFAULT_LOCATION = """{
-    "lat": "42.991692",
-    "lng": "-89.529877",
+    "lat": "43.044173",
+    "lng": "-89.5494252",
     "locality": "Verona, WI"
 }"""
 
@@ -35,37 +37,35 @@ def main(config):
 
         store_specific_info.append(response.json())
 
+    # add 1140
+    response = http.get(url = KWIK_TRIP_STORE_URL.format("1140"), ttl_seconds = 600)
+
+    store_specific_info.append(response.json())
+
     sorted_stores = sorted(store_specific_info, order_stores)
 
-    data = sorted_stores[0]
-    address = data.get("address").get("address1")
-    short_address = ""
-    if len(address) > 15:
-        i = 0
-        for s in address.elems():
-            if i >= 16:
-                break
-            short_address += s
-            i+=1
-    else:
-        short_address = address
-    
+    widgets = []
+    lowest_price = get_fuel_prices(sorted_stores[0]).Premium
+    for store in sorted_stores:
 
-    regular_price = ""
-    premium_price = ""
-    for fuel in data.get("fuel"):
-        if regular_price != "" and premium_price != "":
+        prices = get_fuel_prices(store)
+
+        if prices.Premium > lowest_price:
             break
-        fuel_type = fuel.get("type")
-        if fuel_type.find("PREMIUM") > -1:
-            premium_price = fuel.get("currentPrice")
-            continue
-        if fuel_type.find("UNLEADED 87") > -1:
-            regular_price = fuel.get("currentPrice")
-    
 
-    return render.Root(
-        child = render.Column(
+        address = store.get("address").get("address1")
+        short_address = ""
+        if len(address) > 15:
+            i = 0
+            for s in address.elems():
+                if i >= 16:
+                    break
+                short_address += s
+                i+=1
+        else:
+            short_address = address
+        
+        screen = render.Column(
             cross_align = "center",
             children = [
                 render.Image(
@@ -89,7 +89,7 @@ def main(config):
                                     font = SMALL_FONT
                                 ),
                                 render.Text(
-                                    content = str(regular_price)
+                                    content = str(prices.Regular)
                                 )
                             ]
                         ),
@@ -101,13 +101,22 @@ def main(config):
                                     font = SMALL_FONT
                                 ),
                                 render.Text(
-                                    content = str(premium_price)
+                                    content = str(prices.Premium)
                                 )
                             ]
                         )
                     ]
                 )
             ]
+        )
+        widgets.append(screen)
+
+    delay = int(15000 / len(widgets))
+    return render.Root(
+        delay = delay,
+        show_full_animation = True,
+        child = render.Animation(
+            children = widgets
         )
     )
 
@@ -137,21 +146,30 @@ def get_stores(location):
     ]
 
 def order_stores(store):
+    prices = get_fuel_prices(store)
+    
+    return prices.Premium
+
+def get_fuel_prices(store):
+    regular_price = ""
     premium_price = ""
     for fuel in store.get("fuel"):
-        if premium_price != "":
+        if regular_price != "" and premium_price != "":
             break
         fuel_type = fuel.get("type")
-        if fuel_type.find("PREMIUM") > -1:
+        if fuel_type == PREMIUM_TYPE:
             premium_price = fuel.get("currentPrice")
             continue
-    return premium_price
+        if fuel_type == REGULAR_TYPE:
+            regular_price = fuel.get("currentPrice")
+    return struct(Regular = float(regular_price), Premium = float(premium_price))
+
 def get_stores_for_processing(location):
     loc = json.decode(location)
     query_params = {
         "latitude": str(loc.get("lat")),
         "longitude": str(loc.get("lng")),
-        "limit": "10" # 1-255
+        "limit": "8" # 1-255
     }
     response = http.get(url = KWIK_TRIP_URL, params = query_params, ttl_seconds = 60)
 
