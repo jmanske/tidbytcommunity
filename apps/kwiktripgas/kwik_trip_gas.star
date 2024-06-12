@@ -44,6 +44,7 @@ def main(config):
 
     sorted_stores = sorted(store_specific_info, order_stores)
 
+    print(sorted_stores[0])
     widgets = []
     lowest_price = get_fuel_prices(sorted_stores[0]).Premium
     for store in sorted_stores:
@@ -64,7 +65,7 @@ def main(config):
                 i+=1
         else:
             short_address = address
-        
+
         screen = render.Column(
             cross_align = "center",
             children = [
